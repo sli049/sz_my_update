@@ -50,7 +50,7 @@ int main(int argc, char * argv[])
     }
    
     cfgFile=argv[1];
-    sprintf(oriDir, "%s", argv[2]);
+    sprintf(oriDir, "%s", argv[2]);//add a comment to test github
     if(argc>=4)
 		r1 = atoi(argv[3]); //8
     if(argc>=5)

@@ -53,7 +53,7 @@ int main(int argc, char * argv[])
     if(strcmp(outputDir, "sz.config")==0)
     {
     	printf("Error: wrong input\n");
-	printf("Test case: testfloat_decompress_ts [srcDir] [dimension sizes...]\n");
+	printf("Test case: testfloat_decompress_ts [srcDir] [dimension sizes...]\n");//add a comment to test github
 	exit(0);
     } 
     if(argc>=3)
