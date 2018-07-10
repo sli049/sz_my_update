@@ -19,6 +19,7 @@ struct timeval costStart; /*only used for recording the cost*/
 double totalCost = 0;
 
 
+
 void cost_start()
 {
 	totalCost = 0;
@@ -72,6 +73,7 @@ int main(int argc, char * argv[])
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
     float *data = (float*)malloc(sizeof(float)*dataLength);
     SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+
 
     if(status != SZ_SCES)
     {

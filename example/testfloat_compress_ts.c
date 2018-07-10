@@ -18,6 +18,8 @@ struct timeval endTime;  /* Start and end times */
 struct timeval costStart; /*only used for recording the cost*/
 double totalCost = 0;
 
+#define NB_variable 6
+
 
 void cost_start()
 {
@@ -71,8 +73,21 @@ int main(int argc, char * argv[])
     char oriFilePath[600];
     size_t nbEle;
     size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
-    float *data = (float*)malloc(sizeof(float)*dataLength);
-    SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    //float *data = (float*)malloc(sizeof(float)*dataLength);
+    float **data = (float**) malloc(NB_variable * sizeof(float*));
+    for (i = 0; i < NB_variable; i++){
+        data[i] = (float*) malloc(dataLength * sizeof(float));
+    }
+    size_t* index = (size_t*) malloc(dataLength * sizeof(size_t));
+    //SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+
+    SZ_registerVar("x", SZ_FLOAT, data[0], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("y", SZ_FLOAT, data[1], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("z", SZ_FLOAT, data[2], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("vx", SZ_FLOAT, data[3], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("vy", SZ_FLOAT, data[4], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("vz", SZ_FLOAT, data[5], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("index", SZ_INT64, index, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
 
     if(status != SZ_SCES)
     {
