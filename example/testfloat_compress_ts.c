@@ -78,7 +78,7 @@ int main(int argc, char * argv[])
     for (i = 0; i < NB_variable; i++){
         data[i] = (float*) malloc(dataLength * sizeof(float));
     }
-    size_t* index = (size_t*) malloc(dataLength * sizeof(size_t));
+    int64_t* index = (int64_t*) malloc(dataLength * sizeof(int64_t));
     //SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
 
     SZ_registerVar("x", SZ_FLOAT, data[0], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
@@ -94,24 +94,36 @@ int main(int argc, char * argv[])
 		printf("Error: data file %s cannot be read!\n", oriFilePath);
 		exit(0);
     }
+
+    int file_num[6] = {100, 102, 105, 107, 110, 113};
    
     size_t outSize; 
     unsigned char *bytes = NULL;
-    for(i=1;i<20;i++)
+    for(i=0;i<1;i++)
 	{
 		printf("simulation time step %d\n", i);
-		sprintf(oriFilePath, "%s/QCLOUDf%02d.bin.dat", oriDir, i);
-		float *data_ = readFloatData(oriFilePath, &nbEle, &status);
-		memcpy(data, data_, nbEle*sizeof(float));
+        int m = 0;
+        for (m = 0; m < NB_variable; m++){
+            sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#21-%d.dat", oriDir, file_num[i], m);
+            float* data_ = readFloatData(oriFilePath, &nbEle, &status);
+            memcpy(data[m], data_, nbEle*sizeof(float));
+            free(data_);
+        }
+        sprintf(oriFilePath, "%s/m000.full.mpicosmo.%d#21-i.dat", oriDir, file_num[i]);
+        int64_t* index_ = readInt64Data(oriFilePath, &nbEle, &status);
+        memcpy(index, index_, nbEle*sizeof(int64_t));
+        //printf("--------------- %lld \n", index_[0]);
+		//float *data_ = readFloatData(oriFilePath, &nbEle, &status);
+		//memcpy(data, data_, nbEle*sizeof(float));
 		cost_start();
 		SZ_compress_ts(&bytes, &outSize);
 		cost_end();
 		printf("timecost=%f\n",totalCost); 
 		sprintf(outputFilePath, "%s/QCLOUDf%02d.bin.dat.sz2", outputDir, i);
 		printf("writing compressed data to %s\n", outputFilePath);
-		writeByteData(bytes, outSize, outputFilePath, &status); 
+		//writeByteData(bytes, outSize, outputFilePath, &status); 
 		free(bytes);
-		free(data_);
+		//free(data_);
 	}
     
     printf("done\n");

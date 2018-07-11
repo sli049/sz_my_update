@@ -283,6 +283,13 @@ typedef struct sz_tsc_metainfo
 	FILE *metadata_file;
 } sz_tsc_metadata;
 
+//sihuan added: use a assistant struct to do sorting and swap that are easy to implement: should
+//consider optimizing the performance later.
+typedef struct sort_ast_particle{
+	int64_t id;
+	float var[6];
+} sort_ast_particle;
+
 extern int versionNumber[4];
 
 //-------------------key global variables--------------
@@ -368,6 +375,9 @@ void SZ_registerVar(char* varName, int dataType, void* data,
 			size_t r5, size_t r4, size_t r3, size_t r2, size_t r1);
 int SZ_deregisterVar(char* varName);
 int SZ_deregisterAllVars();
+
+int compare_struct(const void* obj1, const void* obj2);//sihuan added: the compare function in the qsort parameter for 2 structures
+void reorder_vars(SZ_VarSet* vset);//sihuan added: reorder the variables increasingly by their index
 
 int SZ_compress_ts(unsigned char** newByteData, size_t *outSize);
 void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);

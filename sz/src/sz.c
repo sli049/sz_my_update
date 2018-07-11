@@ -822,6 +822,71 @@ int SZ_deregisterVar(char* varName)
 	return state;
 }
 
+
+
+int compare_struct(const void* obj1, const void* obj2){
+	struct sort_ast_particle * srt1 = (struct sort_ast_particle*)obj1;
+	struct sort_ast_particle * srt2 = (struct sort_ast_particle*)obj2;
+	return srt1->id - srt2->id;
+}
+
+void reorder_vars(SZ_VarSet* vset){
+	SZ_Variable* v[7];
+	SZ_Variable* v_tmp;
+	int i, j;
+	//v[0]
+	for (v_tmp = vset->header->next, i = 0; i < 7; i++){
+		v[i] = v_tmp;
+		v_tmp = v_tmp->next;
+	}
+	//printf("here");
+	size_t dataLen = computeDataLength(v[0]->r5, v[0]->r4, v[0]->r3, v[0]->r2, v[0]->r1);
+	//sihuan debug
+	//printf("the data length is: %u", dataLen);
+	struct sort_ast_particle* particle = (struct sort_ast_particle*) malloc(sizeof(struct sort_ast_particle)*dataLen);
+
+	for (i = 0; i < dataLen; i++){
+		particle[i].id = ((int64_t*)v[6]->data)[i];
+	//	printf("%llu ", particle[i].id);
+		for (j = 0; j < 6; j++)
+			particle[i].var[j] = ((float*)v[j]->data)[i];
+	}
+
+	//sihuan debug
+	#if 0
+	printf("index before sorting: \n");
+	for (i = 0; i < 5; i++){
+		printf("%llu  ", particle[i].id);
+		printf("%.5f  ", ((float*)v[0]->data)[i]);
+	}
+	#endif
+	//printf("\n");
+	//sihuan debug
+	//for (i = 0; i < 5; i++)//{
+		//for (j = 0; j < 6; j++)
+		//	printf("%.5f  ", particle[i].var[j]);
+	//		printf("%llu  ", particle[i].id );
+	///}
+	//printf("\n\n");
+
+
+	qsort(particle, dataLen, sizeof(struct sort_ast_particle), compare_struct);
+	for (i = 0; i < dataLen; i++){
+		((int64_t*)v[6]->data)[i] = particle[i].id;
+		for (j = 0; j < 6; j++)
+			((float*)v[j]->data)[i] = particle[i].var[j];
+	}
+
+	//sihuan debug
+	#if 0
+	for (i = 0; i < 5; i++){
+		printf("%llu  ", particle[i].id);
+		printf("%.5f  ", ((float*)v[0]->data)[i]);
+	}
+	printf("\n");
+	#endif
+}
+
 #ifdef HAVE_TIMECMPR
 int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 {
@@ -838,14 +903,26 @@ int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 	sprintf(metadata_str, "step %d", sz_tsc->currentStep);
 	
 	int i = 0, totalSize = 0;
+	SZ_Variable* v = NULL;
+	reorder_vars(vset);//sihuan added
 	for(i=0;i<vset->count;i++)
 	{
-		SZ_Variable* v = vset->header->next;
+		if (i == 0) v = vset->header->next;
 		multisteps = v->multisteps; //assign the v's multisteps to the global variable 'multisteps', which will be used in the following compression.
+		//sihuan debug
+		#if 0
+		printf("current variable name: %s\n", v->varName);
+		int tmp = 0;
+		for (tmp = 0; tmp < 5; tmp++){
+			if (strcmp(v->varName, "index")) printf("%.10f  ", ((float*)v->data)[tmp]);
+			else printf("%lld  ", ((int64_t*)v->data)[tmp]);
+		}
+		printf("end printing the variable: %s\n", v->varName);
+		#endif
 
 		if(v->dataType==SZ_FLOAT)
 		{
-			SZ_compress_args_float(&(compressBuffer[i]), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &outSize_[i], v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
+	//		SZ_compress_args_float(&(compressBuffer[i]), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &outSize_[i], v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
 		}
 		else if(v->dataType==SZ_DOUBLE)
 		{
