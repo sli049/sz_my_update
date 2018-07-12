@@ -281,6 +281,9 @@ typedef struct sz_tsc_metainfo
 	int currentStep;
 	char metadata_filename[256];
 	FILE *metadata_file;
+	unsigned char* bit_array; //sihuan added
+	size_t intersect_size; //sihuan added
+	int64_t* hist_index; //sihuan added: prestep index 
 } sz_tsc_metadata;
 
 //sihuan added: use a assistant struct to do sorting and swap that are easy to implement: should
@@ -378,6 +381,8 @@ int SZ_deregisterAllVars();
 
 int compare_struct(const void* obj1, const void* obj2);//sihuan added: the compare function in the qsort parameter for 2 structures
 void reorder_vars(SZ_VarSet* vset);//sihuan added: reorder the variables increasingly by their index
+size_t intersectAndsort(int64_t* preIndex, size_t preLen, SZ_VarSet* curVar, size_t dataLen, unsigned char* bitarray);
+//sihuan added: find intersection and keep new var sorted by id
 
 int SZ_compress_ts(unsigned char** newByteData, size_t *outSize);
 void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);
