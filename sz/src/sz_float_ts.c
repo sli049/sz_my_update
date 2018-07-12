@@ -131,11 +131,19 @@ double realPrecision, float valueRangeSize, float medianValue_f)
 	float predAbsErr = 0;
 	checkRadius = (exe_params->intvCapacity-1)*realPrecision;
 	double interval = 2*realPrecision;
-	
-	for(i=2;i<dataLength;i++)
+	int j = 0;
+	while (sz_tsc->bit_array[j] == '1'){j++;}
+	j++;
+	while (sz_tsc->bit_array[j] == '1'){j++;}
+	j++;
+
+	//for(i=2;i<dataLength && j < 418605;i++, j++)//sihuan update:
+	for(i=2;i<dataLength;i++, j++)
 	{
+		while(sz_tsc->bit_array[j] == '1'){j++;}
 		curData = spaceFillingValue[i];
-		pred = preStepData[i];
+		//pred = preStepData[i];
+		pred = preStepData[j];
 		predAbsErr = fabs(curData - pred);	
 		if(predAbsErr<=checkRadius)
 		{
@@ -177,6 +185,8 @@ double realPrecision, float valueRangeSize, float medianValue_f)
 		addExactData(exactMidByteArray, exactLeadNumArray, resiBitArray, lce);
 		decData[i] = vce->data;
 	}//end of for
+
+	printf("after doing compression, the loop iterations, data length are: %zu, %zu\n", i, dataLength);
 		
 	size_t exactDataNum = exactLeadNumArray->size;
 	

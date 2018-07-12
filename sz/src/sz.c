@@ -842,7 +842,7 @@ void reorder_vars(SZ_VarSet* vset){
 	//printf("here");
 	size_t dataLen = computeDataLength(v[0]->r5, v[0]->r4, v[0]->r3, v[0]->r2, v[0]->r1);
 	//sihuan debug
-	//printf("the data length is: %u", dataLen);
+	//printf("the data length is (in sorting): %u", dataLen);
 	struct sort_ast_particle* particle = (struct sort_ast_particle*) malloc(sizeof(struct sort_ast_particle)*dataLen);
 
 	for (i = 0; i < dataLen; i++){
@@ -876,6 +876,7 @@ void reorder_vars(SZ_VarSet* vset){
 		for (j = 0; j < 6; j++)
 			((float*)v[j]->data)[i] = particle[i].var[j];
 	}
+	free(particle);
 
 	//sihuan debug
 	#if 0
@@ -885,6 +886,45 @@ void reorder_vars(SZ_VarSet* vset){
 	}
 	printf("\n");
 	#endif
+}
+
+size_t intersectAndsort(int64_t* preIndex, size_t preLen, SZ_VarSet* curVar, size_t dataLen, unsigned char* bitarray){
+	size_t intersect_size = 0;
+	size_t i, j, k, m, cnt;
+	i = j = k = m = cnt = 0;
+	SZ_Variable* v[7];
+	SZ_Variable* v_tmp;
+	//v[0]
+	for (v_tmp = curVar->header->next, i = 0; i < 7; i++){
+		v[i] = v_tmp;
+		v_tmp = v_tmp->next;
+	}
+	for (i = 0; i < preLen; i++)
+		bitarray[i] = '0';
+	i = 0;
+	while(i < preLen && j < dataLen){
+		if (preIndex[i] == ((int64_t*)v[6]->data)[j]){
+			cnt++;
+			int64_t tmp;
+			tmp = ((int64_t*)v[6]->data)[k];
+			((int64_t*)v[6]->data)[k] = ((int64_t*)v[6]->data)[j];
+			((int64_t*)v[6]->data)[j] = tmp;
+			float data_tmp;
+			for (m = 0; m < 6; m++){
+				data_tmp = ((float*)v[m]->data)[k];
+				((float*)v[m]->data)[k] = ((float*)v[m]->data)[j];
+				((float*)v[m]->data)[j] = data_tmp;
+			}
+			k++; i++; j++;
+		}
+		else if (preIndex[i] < ((int64_t*)v[6]->data)[j]){
+			bitarray[i] = '1';
+			i++;
+		}
+		else j++;
+	}
+	printf("intersect count is: %zu, i j k pre curlen is: %zu, %zu, %zu, %zu, %zu\n\n", cnt, i, j, k, preLen, dataLen);
+	return cnt;
 }
 
 #ifdef HAVE_TIMECMPR
@@ -905,7 +945,46 @@ int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 	int i = 0, totalSize = 0;
 	SZ_Variable* v = NULL;
 	reorder_vars(vset);//sihuan added
-	for(i=0;i<vset->count;i++)
+	size_t preLen = sz_tsc->intersect_size;
+	v = vset->header->next;
+	size_t dataLen = computeDataLength(v->r5, v->r4, v->r3, v->r2, v->r1);
+	//printf("data length is: %zu\n", dataLen);
+	size_t cur_intersect_size;
+
+	//#if 0
+	if (sz_tsc->currentStep % confparams_cpr->snapshotCmprStep == 0){
+		cur_intersect_size = dataLen;
+		int64_t* tmp_hist_index = (int64_t*) malloc(sizeof(int64_t)*cur_intersect_size);
+		v = vset->header->next;
+		while(strcmp(v->varName, "index")) v = v->next;
+		sz_tsc->hist_index = tmp_hist_index;
+		memcpy(sz_tsc->hist_index, (int64_t*)v->data, sizeof(int64_t)*cur_intersect_size);
+	}
+	else {
+		printf("prelen, dataLen before calling intersect: %zu, %zu\n", preLen, dataLen);
+		unsigned char* tmp_bitarray = (unsigned char*) malloc(sizeof(unsigned char)*preLen);
+		sz_tsc->bit_array = tmp_bitarray;
+		cur_intersect_size = intersectAndsort(sz_tsc->hist_index, preLen, vset, dataLen, sz_tsc->bit_array);
+		if ((sz_tsc->currentStep+1) % confparams_cpr->snapshotCmprStep == 0) free(sz_tsc->hist_index);
+		else {
+			free(sz_tsc->hist_index);
+			int64_t* tmp_hist_index = (int64_t*) malloc(sizeof(int64_t)*cur_intersect_size);
+			v = vset->header->next;
+			while(strcmp(v->varName, "index")) v = v->next;
+			sz_tsc->hist_index = tmp_hist_index;
+			memcpy(sz_tsc->hist_index, (int64_t*)v->data, sizeof(int64_t)*cur_intersect_size);
+		}
+		//printf("sz_tsc->intersection_size is %zu", sz_tsc->intersect_size);
+	}
+	sz_tsc->intersect_size = cur_intersect_size;
+
+	//#endif
+
+	int partial = 0;
+
+	if (sz_tsc->currentStep % confparams_cpr->snapshotCmprStep != 0) partial = 1; //time-based compression is partial
+
+	for(i=0;i<vset->count-1;i++)//sihuan modified, the last variable is id which is not needed to compress. so that is why do count-1
 	{
 		if (i == 0) v = vset->header->next;
 		multisteps = v->multisteps; //assign the v's multisteps to the global variable 'multisteps', which will be used in the following compression.
@@ -922,7 +1001,15 @@ int SZ_compress_ts(unsigned char** newByteData, size_t *outSize)
 
 		if(v->dataType==SZ_FLOAT)
 		{
-	//		SZ_compress_args_float(&(compressBuffer[i]), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &outSize_[i], v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
+			if (partial){
+				SZ_compress_args_float_ps(&(compressBuffer[i]), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &outSize_[i], v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio, partial, 1);
+				SZ_compress_args_float_ps(&(compressBuffer[i]), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &outSize_[i], v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio, partial, 2);
+			}
+			else{
+				SZ_compress_args_float(&(compressBuffer[i]), (float*)v->data, v->r5, v->r4, v->r3, v->r2, v->r1, &outSize_[i], v->errBoundMode, v->absErrBound, v->relBoundRatio, v->pwRelBoundRatio);
+			}
+			//need to handle the rest part now
+
 		}
 		else if(v->dataType==SZ_DOUBLE)
 		{
