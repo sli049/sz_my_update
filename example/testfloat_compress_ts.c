@@ -99,7 +99,7 @@ int main(int argc, char * argv[])
    
     size_t outSize; 
     unsigned char *bytes = NULL;
-    for(i=0;i<1;i++)
+    for(i=0;i<6;i++)
 	{
 		printf("simulation time step %d\n", i);
         int m = 0;
@@ -121,7 +121,7 @@ int main(int argc, char * argv[])
 		printf("timecost=%f\n",totalCost); 
 		sprintf(outputFilePath, "%s/QCLOUDf%02d.bin.dat.sz2", outputDir, i);
 		printf("writing compressed data to %s\n", outputFilePath);
-		//writeByteData(bytes, outSize, outputFilePath, &status); 
+		writeByteData(bytes, outSize, outputFilePath, &status); 
 		free(bytes);
 		//free(data_);
 	}
