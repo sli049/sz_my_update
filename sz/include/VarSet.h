@@ -23,6 +23,7 @@ typedef struct sz_multisteps
 	int lastSnapshotStep; //the previous snapshot step
 	unsigned int currentStep; //current time step of the execution/simulation
 	void* hist_data; //historical data in past time steps
+	//int64_t* hist_index; //sihuan added: prestep reordered index data. moved to sz_tsc_metadata struct;
 } sz_multisteps;
 
 typedef struct SZ_Variable
