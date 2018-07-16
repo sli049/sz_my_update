@@ -35,6 +35,7 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 	
 	if(cmpSize!=8+4+MetaDataByteLength && cmpSize!=8+8+MetaDataByteLength) //4,8 means two posibilities of SZ_SIZE_TYPE
 	{
+		printf("it goes here\n");
 		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
 		if(confparams_dec->szMode!=SZ_TEMPORAL_COMPRESSION)
 		{
@@ -51,9 +52,11 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 		}
 		else if(confparams_dec->szMode==SZ_BEST_COMPRESSION || confparams_dec->szMode==SZ_DEFAULT_COMPRESSION || confparams_dec->szMode==SZ_TEMPORAL_COMPRESSION)
 		{
+			printf("it goes here\n");
 			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
 				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
 			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
+			printf("it goes here\n");
 			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
 			//memcpy(szTmpBytes, tmpBytes, tmpSize);
 			//free(tmpBytes); //release useless memory		
@@ -70,6 +73,8 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 	//TODO: convert szTmpBytes to data array.
 	TightDataPointStorageF* tdps;
 	int errBoundMode = new_TightDataPointStorageF_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
+	//sihuan degbug
+	printf("it goes here\n");
 	
 	//writeByteData(tdps->typeArray, tdps->typeArray_size, "decompress-typebytes.tbt");
 	int dim = computeDimension(r5,r4,r3,r2,r1);	
@@ -129,8 +134,239 @@ int SZ_decompress_args_float(float** newData, size_t r5, size_t r4, size_t r3, s
 	return status;
 }
 
+int SZ_decompress_args_float_ps(float** newData, size_t r5, size_t r4, size_t r3, size_t r2, size_t r1, unsigned char* cmpBytes, size_t cmpSize, int phase, size_t RealDataLen)
+{
+	int status = SZ_SCES;
+	size_t dataLength = computeDataLength(r5,r4,r3,r2,r1);
+	dataLength = RealDataLen;
+	
+	//unsigned char* tmpBytes;
+	size_t targetUncompressSize = dataLength <<2; //i.e., *4
+	//tmpSize must be "much" smaller than dataLength
+	size_t i, tmpSize = 8+MetaDataByteLength+exe_params->SZ_SIZE_TYPE;
+	unsigned char* szTmpBytes;	
+	
+	if(cmpSize!=8+4+MetaDataByteLength && cmpSize!=8+8+MetaDataByteLength) //4,8 means two posibilities of SZ_SIZE_TYPE
+	{
+		printf("it goes here\n");
+		int isZlib = isZlibFormat(cmpBytes[0], cmpBytes[1]);
+		if(confparams_dec->szMode!=SZ_TEMPORAL_COMPRESSION)
+		{
+			if(isZlib)
+				confparams_dec->szMode = SZ_BEST_COMPRESSION;
+			else
+				confparams_dec->szMode = SZ_BEST_SPEED;			
+		}
+		
+		if(confparams_dec->szMode==SZ_BEST_SPEED)
+		{
+			tmpSize = cmpSize;
+			szTmpBytes = cmpBytes;	
+		}
+		else if(confparams_dec->szMode==SZ_BEST_COMPRESSION || confparams_dec->szMode==SZ_DEFAULT_COMPRESSION || confparams_dec->szMode==SZ_TEMPORAL_COMPRESSION)
+		{
+			printf("it goes here\n");
+			if(targetUncompressSize<MIN_ZLIB_DEC_ALLOMEM_BYTES) //Considering the minimum size
+				targetUncompressSize = MIN_ZLIB_DEC_ALLOMEM_BYTES; 
+			tmpSize = zlib_uncompress5(cmpBytes, (unsigned long)cmpSize, &szTmpBytes, (unsigned long)targetUncompressSize+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE);//		(unsigned long)targetUncompressSize+8: consider the total length under lossless compression mode is actually 3+4+1+targetUncompressSize
+			printf("it goes here\n");
+			//szTmpBytes = (unsigned char*)malloc(sizeof(unsigned char)*tmpSize);
+			//memcpy(szTmpBytes, tmpBytes, tmpSize);
+			//free(tmpBytes); //release useless memory		
+		}
+		else
+		{
+			printf("Wrong value of confparams_dec->szMode in the double compressed bytes.\n");
+			status = SZ_MERR;
+			return status;
+		}	
+	}
+	else
+		szTmpBytes = cmpBytes;
+	//TODO: convert szTmpBytes to data array.
+	TightDataPointStorageF* tdps;
+	int errBoundMode = new_TightDataPointStorageF_fromFlatBytes(&tdps, szTmpBytes, tmpSize);
+	//sihuan degbug
+	printf("it goes here\n");
+	
+	//writeByteData(tdps->typeArray, tdps->typeArray_size, "decompress-typebytes.tbt");
+	int dim = computeDimension(r5,r4,r3,r2,r1);	
+	int floatSize = sizeof(float);
+	if(tdps->isLossless)
+	{
+		*newData = (float*)malloc(floatSize*dataLength);
+		if(sysEndianType==BIG_ENDIAN_SYSTEM)
+		{
+			memcpy(*newData, szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE, dataLength*floatSize);
+		}
+		else
+		{
+			unsigned char* p = szTmpBytes+4+MetaDataByteLength+exe_params->SZ_SIZE_TYPE;
+			for(i=0;i<dataLength;i++,p+=floatSize)
+				(*newData)[i] = bytesToFloat(p);
+		}		
+	}
+	else 
+	{
+		if(tdps->raBytes_size > 0) //v2.0
+		{
+			printf("the v2.0\n");
+			if (dim == 1)
+				//getSnapshotData_float_1D(newData,r1,tdps, errBoundMode); //sihuand update here
+				getSnapshotData_float_1D_ps(newData, RealDataLen, tdps, errBoundMode, phase);
+			else if(dim == 2)
+				decompressDataSeries_float_2D_nonblocked_with_blocked_regression(newData, r2, r1, tdps->raBytes);
+			else if(dim == 3)
+				decompressDataSeries_float_3D_nonblocked_with_blocked_regression(newData, r3, r2, r1, tdps->raBytes);
+			else if(dim == 4)
+				decompressDataSeries_float_3D_nonblocked_with_blocked_regression(newData, r4*r3, r2, r1, tdps->raBytes);
+			else
+			{
+				printf("Error: currently support only at most 4 dimensions!\n");
+				status = SZ_DERR;
+			}	
+		}
+		else //1.4.13
+		{
+			printf("the v1.4.13\n");
+			if (dim == 1)
+				getSnapshotData_float_1D_ps(newData, RealDataLen,tdps, errBoundMode, phase);
+			else if (dim == 2)
+				getSnapshotData_float_2D(newData,r2,r1,tdps, errBoundMode);
+			else if (dim == 3)
+				getSnapshotData_float_3D(newData,r3,r2,r1,tdps, errBoundMode);
+			else if (dim == 4)
+				getSnapshotData_float_4D(newData,r4,r3,r2,r1,tdps, errBoundMode);
+			else
+			{
+				printf("Error: currently support only at most 4 dimensions!\n");
+				status = SZ_DERR;
+			}			
+		}
+	}
+	free_TightDataPointStorageF2(tdps);
+	if(confparams_dec->szMode!=SZ_BEST_SPEED && cmpSize!=8+MetaDataByteLength+exe_params->SZ_SIZE_TYPE)
+		free(szTmpBytes);
+	return status;
+}
+
+
+
+
+
+
 void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps) 
 {
+	printf("it goes to decompressDataSeries_float_1D\n");
+	printf("dataSeriesLength is: %zu\n", dataSeriesLength);
+	updateQuantizationInfo(tdps->intervals);
+	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
+								// in resiMidBits, p is to track the
+								// byte_index of resiMidBits, l is for
+								// leadNum
+	unsigned char* leadNum;
+	double interval = tdps->realPrecision*2;
+	
+	convertByteArray2IntArray_fast_2b(tdps->exactDataNum, tdps->leadNumArray, tdps->leadNumArray_size, &leadNum);
+
+	*data = (float*)malloc(sizeof(float)*dataSeriesLength);
+
+	int* type = (int*)malloc(dataSeriesLength*sizeof(int));
+	
+	HuffmanTree* huffmanTree = createHuffmanTree(tdps->stateNum);
+	decode_withTree(huffmanTree, tdps->typeArray, dataSeriesLength, type);
+	SZ_ReleaseHuffman(huffmanTree);	
+
+	unsigned char preBytes[4];
+	unsigned char curBytes[4];
+	
+	memset(preBytes, 0, 4);
+
+	size_t curByteIndex = 0;
+	int reqBytesLength, resiBitsLength, resiBits; 
+	unsigned char leadingNum;	
+	float medianValue, exactData, predValue;
+	
+	reqBytesLength = tdps->reqLength/8;
+	resiBitsLength = tdps->reqLength%8;
+	medianValue = tdps->medianValue;
+	
+	int type_;
+	for (i = 0; i < dataSeriesLength; i++) {	
+		type_ = type[i];
+		switch (type_) {
+		case 0:
+			// compute resiBits
+			resiBits = 0;
+			if (resiBitsLength != 0) {
+				int kMod8 = k % 8;
+				int rightMovSteps = getRightMovingSteps(kMod8, resiBitsLength);
+				if (rightMovSteps > 0) {
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code) >> rightMovSteps;
+				} else if (rightMovSteps < 0) {
+					int code1 = getLeftMovingCode(kMod8);
+					int code2 = getRightMovingCode(kMod8, resiBitsLength);
+					int leftMovSteps = -rightMovSteps;
+					rightMovSteps = 8 - leftMovSteps;
+					resiBits = (tdps->residualMidBits[p] & code1) << leftMovSteps;
+					p++;
+					resiBits = resiBits
+							| ((tdps->residualMidBits[p] & code2) >> rightMovSteps);
+				} else // rightMovSteps == 0
+				{
+					int code = getRightMovingCode(kMod8, resiBitsLength);
+					resiBits = (tdps->residualMidBits[p] & code);
+					p++;
+				}
+				k += resiBitsLength;
+			}
+
+			// recover the exact data	
+			memset(curBytes, 0, 4);
+			leadingNum = leadNum[l++];
+			memcpy(curBytes, preBytes, leadingNum);
+			for (j = leadingNum; j < reqBytesLength; j++)
+				curBytes[j] = tdps->exactMidBytes[curByteIndex++];
+			if (resiBitsLength != 0) {
+				unsigned char resiByte = (unsigned char) (resiBits << (8 - resiBitsLength));
+				curBytes[reqBytesLength] = resiByte;
+			}
+			
+			exactData = bytesToFloat(curBytes);
+			(*data)[i] = exactData + medianValue;
+			memcpy(preBytes,curBytes,4);
+			break;
+		default:
+			//predValue = 2 * (*data)[i-1] - (*data)[i-2];
+			predValue = (*data)[i-1];
+			(*data)[i] = predValue + (type_-exe_params->intvRadius)*interval;
+			break;
+		}
+		//printf("%.30G\n",(*data)[i]);
+	}
+	
+#ifdef HAVE_TIMECMPR	
+	//if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION) //sihuan changed here
+	if (confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION && multisteps->compressionType != 2){
+		//sihuan debug;
+		printf("space decompression to write hist data, the compression type is: %d\n", multisteps->compressionType);
+		memcpy(multisteps->hist_data, (*data), dataSeriesLength*sizeof(float));
+	}
+#endif	
+	
+	free(leadNum);
+	free(type);
+	return;
+}
+
+
+#if 0
+
+void decompressDataSeries_float_1D_ps(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps) 
+{
+	printf("it goes to decompressDataSeries_float_1D\n");
+	printf("dataSeriesLength is: %zu\n", dataSeriesLength);
 	updateQuantizationInfo(tdps->intervals);
 	size_t i, j, k = 0, p = 0, l = 0; // k is to track the location of residual_bit
 								// in resiMidBits, p is to track the
@@ -227,6 +463,8 @@ void decompressDataSeries_float_1D(float** data, size_t dataSeriesLength, TightD
 	free(type);
 	return;
 }
+#endif
+
 
 void decompressDataSeries_float_2D(float** data, size_t r1, size_t r2, TightDataPointStorageF* tdps) 
 {
@@ -1645,6 +1883,8 @@ void decompressDataSeries_float_4D(float** data, size_t r1, size_t r2, size_t r3
 
 void getSnapshotData_float_1D(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps, int errBoundMode)
 {	
+	//sihuan debug
+	printf("it goes to getSnapshotData_float_1D\n");
 	size_t i;
 
 	if (tdps->allSameData) {
@@ -1707,6 +1947,82 @@ void getSnapshotData_float_1D(float** data, size_t dataSeriesLength, TightDataPo
 		}
 	}
 }
+
+
+
+void getSnapshotData_float_1D_ps(float** data, size_t dataSeriesLength, TightDataPointStorageF* tdps, int errBoundMode, int phase)
+{	
+	//sihuan debug
+	printf("it goes to getSnapshotData_float_1D_ps\n");
+	size_t i;
+
+	if (tdps->allSameData) {
+		float value = bytesToFloat(tdps->exactMidBytes);
+		*data = (float*)malloc(sizeof(float)*dataSeriesLength);
+		for (i = 0; i < dataSeriesLength; i++)
+			(*data)[i] = value;
+	} else {
+		if (tdps->rtypeArray == NULL) {
+			if(errBoundMode < PW_REL)
+			{
+#ifdef HAVE_TIMECMPR				
+				if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
+				{
+					//if(multisteps->compressionType == 0) //snapshot
+					if (phase == 2) //phase2 used snapshot compression
+						decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
+					if (phase == 1) //phase1 used time compression
+						{
+							decompressDataSeries_float_1D_ts(data, dataSeriesLength, multisteps, tdps);
+							//multisteps->hist_data += dataSeriesLength*sizeof(float);
+						}					
+				}
+				else
+#endif				
+					decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
+			}
+			else 
+			{
+				//decompressDataSeries_float_1D_pwr(data, dataSeriesLength, tdps);
+				decompressDataSeries_float_1D_pwrgroup(data, dataSeriesLength, tdps);
+			}
+			return;
+		} else {
+			*data = (float*)malloc(sizeof(float)*dataSeriesLength);
+			// insert the reserved values
+			//int[] rtypes = TypeManager.convertByteArray2IntArray_fast_1b(
+			//		dataSeriesLength, rtypeArray);
+			int* rtypes;
+			int validLength = computeBitNumRequired(dataSeriesLength);
+			decompressBitArraybySimpleLZ77(&rtypes, tdps->rtypeArray, tdps->rtypeArray_size, dataSeriesLength, validLength);
+			size_t count = 0;
+			for (i = 0; i < dataSeriesLength; i++) {
+				if (rtypes[i] == 1)
+					(*data)[i] = tdps->reservedValue;
+				else
+					count++;
+			}
+			// get the decompressed data
+			float* decmpData;
+			if(errBoundMode < PW_REL)
+				decompressDataSeries_float_1D(&decmpData, dataSeriesLength, tdps);
+			else 
+				decompressDataSeries_float_1D_pwr(&decmpData, dataSeriesLength, tdps);
+			// insert the decompressed data
+			size_t k = 0;
+			for (i = 0; i < dataSeriesLength; i++) {
+				if (rtypes[i] == 0) {
+					(*data)[i] = decmpData[k++];
+				}
+			}
+			free(decmpData);
+			free(rtypes);
+		}
+	}
+}
+
+
+
 
 void getSnapshotData_float_2D(float** data, size_t r1, size_t r2, TightDataPointStorageF* tdps, int errBoundMode) 
 {

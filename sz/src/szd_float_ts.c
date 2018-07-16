@@ -50,12 +50,38 @@ void decompressDataSeries_float_1D_ts(float** data, size_t dataSeriesLength, sz_
 	reqBytesLength = tdps->reqLength/8;
 	resiBitsLength = tdps->reqLength%8;
 	medianValue = tdps->medianValue;
+
+	//now decompress the bitarray and use it to do decompression(this should be optimized to execute for one step while not one varialble);
+	char bit_file_name[50];
+	sprintf(bit_file_name, "bitarray_out_sz_%d.sz1", sz_tsc->currentStep);
+	size_t byteLength_tmp;
+	int status_tmp;
+	unsigned char* bit_read = readByteData(bit_file_name, &byteLength_tmp, &status_tmp);
+	size_t oriSize = bytesToSize(bit_read);
+	bit_read += sizeof(size_t);
+	unsigned long cmpSize = (unsigned long) bytesToLong_bigEndian(bit_read);;
+	bit_read += sizeof(unsigned long);
+
+	if(cmpSize == byteLength_tmp - sizeof(size_t) - sizeof(unsigned long))
+		printf("the two zlib compuression size match\n");
+	else("the two zlib compression size DON'T match\n");
+
+	unsigned char* dec_bit_arr = (unsigned char*) malloc(sizeof(unsigned char) * oriSize);
+	zlib_uncompress(bit_read, cmpSize, &dec_bit_arr, oriSize);
+
+
+	int m = 0;
+	while (dec_bit_arr[m] == '1'){m++;}
 	
 	int type_;
-	for (i = 0; i < dataSeriesLength; i++) {
+	for (i = 0; i < dataSeriesLength; i++, m++) { //need to j++ also
 		type_ = type[i];
+		while(dec_bit_arr[m] == '1'){m++;}
 		switch (type_) {
 		case 0:
+
+			//increase the j pointer
+			
 			// compute resiBits
 			resiBits = 0;
 			if (resiBitsLength != 0) {
@@ -100,7 +126,8 @@ void decompressDataSeries_float_1D_ts(float** data, size_t dataSeriesLength, sz_
 		default:
 			//predValue = (*data)[i-1];
 			if(confparams_dec->szMode == SZ_TEMPORAL_COMPRESSION)
-				predValue = lastSnapshotData[i];
+				//predValue = lastSnapshotData[i];//change the i pointer to be j here
+				predValue = lastSnapshotData[m];
 			(*data)[i] = predValue + (type_-exe_params->intvRadius)*interval;
 			break;
 		}

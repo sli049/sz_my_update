@@ -129,6 +129,7 @@ size_t checkFileSize(char *srcFilePath, int *status)
 
 unsigned char *readByteData(char *srcFilePath, size_t *byteLength, int *status)
 {
+	//printf("it goes to right before readByteData\n");
 	FILE *pFile = fopen(srcFilePath, "rb");
     if (pFile == NULL)
     {
@@ -151,7 +152,8 @@ unsigned char *readByteData(char *srcFilePath, size_t *byteLength, int *status)
     }
     fread(byteBuf, 1, *byteLength, pFile);
     fclose(pFile);
-    *status = SZ_SCES;
+    *status = SZ_SCES;//sihuan debug
+    //printf("it goes to right before readByteData\n");
     return byteBuf;
 }
 

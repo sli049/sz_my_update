@@ -43,6 +43,7 @@ int main(int argc, char * argv[])
     size_t r5=0,r4=0,r3=0,r2=0,r1=0;
     char oriDir[640], outputDir[640], outputFilePath[600];
     char *cfgFile;
+    float eb = 0.001;
     
     if(argc < 3)
     {
@@ -56,7 +57,8 @@ int main(int argc, char * argv[])
     if(argc>=4)
 		r1 = atoi(argv[3]); //8
     if(argc>=5)
-		r2 = atoi(argv[4]); //8
+		//r2 = atoi(argv[4]); //8
+        eb = atof(argv[4]);
     if(argc>=6)
 		r3 = atoi(argv[5]); //128
     if(argc>=7)
@@ -81,13 +83,13 @@ int main(int argc, char * argv[])
     int64_t* index = (int64_t*) malloc(dataLength * sizeof(int64_t));
     //SZ_registerVar("CLOUDf", SZ_FLOAT, data, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
 
-    SZ_registerVar("x", SZ_FLOAT, data[0], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
-    SZ_registerVar("y", SZ_FLOAT, data[1], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
-    SZ_registerVar("z", SZ_FLOAT, data[2], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
-    SZ_registerVar("vx", SZ_FLOAT, data[3], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
-    SZ_registerVar("vy", SZ_FLOAT, data[4], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
-    SZ_registerVar("vz", SZ_FLOAT, data[5], REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
-    SZ_registerVar("index", SZ_INT64, index, REL, 0, 0.001, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("x", SZ_FLOAT, data[0], REL, 0, eb, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("y", SZ_FLOAT, data[1], REL, 0, eb, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("z", SZ_FLOAT, data[2], REL, 0, eb, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("vx", SZ_FLOAT, data[3], REL, 0, eb, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("vy", SZ_FLOAT, data[4], REL, 0, eb, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("vz", SZ_FLOAT, data[5], REL, 0, eb, 0, r5, r4, r3, r2, r1);
+    SZ_registerVar("index", SZ_INT64, index, REL, 0, eb, 0, r5, r4, r3, r2, r1);
 
     if(status != SZ_SCES)
     {
