@@ -292,15 +292,9 @@ typedef struct sz_tsc_metainfo
 	int64_t* hist_index; //sihuan added: prestep index 
 } sz_tsc_metadata;
 
-//sihuan added: use a assistant struct to do sorting and swap that are easy to implement: should
-//consider optimizing the performance later.
-typedef struct sort_ast_particle{
-	int64_t id;
-	float var[6];
-} sort_ast_particle;
+extern float delta_t_opt[5]; //sihuan added
 
 extern int versionNumber[4];
-extern float delta_t_opt[5]; //sihuan added
 
 //-------------------key global variables--------------
 extern int dataEndianType; //*endian type of the data read from disk
@@ -389,18 +383,10 @@ void SZ_registerVar(char* varName, int dataType, void* data,
 int SZ_deregisterVar(char* varName);
 int SZ_deregisterAllVars();
 
-int compare_struct(const void* obj1, const void* obj2);//sihuan added: the compare function in the qsort parameter for 2 structures
-void reorder_vars(SZ_VarSet* vset);//sihuan added: reorder the variables increasingly by their index
-size_t intersectAndsort(int64_t* preIndex, size_t preLen, SZ_VarSet* curVar, size_t dataLen, unsigned char* bitarray);
-//sihuan added: find intersection and keep new var sorted by id
-void write_reordered_tofile(SZ_VarSet* curVar, size_t dataLen);
-//sihuan added: write the reordered input to files for further decompression validation
-
 int SZ_compress_ts(unsigned char** newByteData, size_t *outSize);
 int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize);//sihuan added
 
 void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);
-float calculate_delta_t(size_t size);//sihuan added
 void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength);//sihuan added
 
 void SZ_Finalize();

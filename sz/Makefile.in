@@ -142,13 +142,14 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libSZ_la_LIBADD =
 am__libSZ_la_SOURCES_DIST = src/ByteToolkit.c src/dataCompression.c \
 	src/DynamicIntArray.c src/iniparser.c src/CompressElement.c \
-	src/DynamicByteArray.c src/rw.c src/TightDataPointStorageI.c \
-	src/TightDataPointStorageD.c src/TightDataPointStorageF.c \
-	src/conf.c src/DynamicDoubleArray.c src/TypeManager.c \
-	src/dictionary.c src/DynamicFloatArray.c src/VarSet.c \
-	src/callZlib.c src/Huffman.c src/sz_float.c src/sz_double.c \
-	src/sz_int8.c src/sz_int16.c src/sz_int32.c src/sz_int64.c \
-	src/sz_uint8.c src/sz_uint16.c src/sz_uint32.c src/sz_uint64.c \
+	src/DynamicByteArray.c src/rw.c src/utility.c \
+	src/TightDataPointStorageI.c src/TightDataPointStorageD.c \
+	src/TightDataPointStorageF.c src/conf.c \
+	src/DynamicDoubleArray.c src/TypeManager.c src/dictionary.c \
+	src/DynamicFloatArray.c src/VarSet.c src/callZlib.c \
+	src/Huffman.c src/sz_float.c src/sz_double.c src/sz_int8.c \
+	src/sz_int16.c src/sz_int32.c src/sz_int64.c src/sz_uint8.c \
+	src/sz_uint16.c src/sz_uint32.c src/sz_uint64.c \
 	src/szd_uint8.c src/szd_uint16.c src/szd_uint32.c \
 	src/szd_uint64.c src/szd_float.c src/szd_double.c \
 	src/szd_int8.c src/szd_int16.c src/szd_int32.c src/szd_int64.c \
@@ -171,7 +172,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_FALSE@	src/libSZ_la-iniparser.lo \
 @FORTRAN_FALSE@	src/libSZ_la-CompressElement.lo \
 @FORTRAN_FALSE@	src/libSZ_la-DynamicByteArray.lo \
-@FORTRAN_FALSE@	src/libSZ_la-rw.lo \
+@FORTRAN_FALSE@	src/libSZ_la-rw.lo src/libSZ_la-utility.lo \
 @FORTRAN_FALSE@	src/libSZ_la-TightDataPointStorageI.lo \
 @FORTRAN_FALSE@	src/libSZ_la-TightDataPointStorageD.lo \
 @FORTRAN_FALSE@	src/libSZ_la-TightDataPointStorageF.lo \
@@ -213,7 +214,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @FORTRAN_TRUE@	src/libSZ_la-iniparser.lo src/libSZ_la-szf.lo \
 @FORTRAN_TRUE@	src/libSZ_la-CompressElement.lo \
 @FORTRAN_TRUE@	src/libSZ_la-DynamicByteArray.lo \
-@FORTRAN_TRUE@	src/libSZ_la-rw.lo \
+@FORTRAN_TRUE@	src/libSZ_la-rw.lo src/libSZ_la-utility.lo \
 @FORTRAN_TRUE@	src/libSZ_la-TightDataPointStorageI.lo \
 @FORTRAN_TRUE@	src/libSZ_la-TightDataPointStorageD.lo \
 @FORTRAN_TRUE@	src/libSZ_la-TightDataPointStorageF.lo \
@@ -332,8 +333,8 @@ am__include_HEADERS_DIST = include/CompressElement.h \
 	include/szd_float_pwr.h include/szd_double_pwr.h \
 	include/sz_float_ts.h include/szd_float_ts.h \
 	include/sz_double_ts.h include/szd_double_ts.h \
-	include/DynamicByteArray.h include/DynamicIntArray.h \
-	include/TightDataPointStorageI.h \
+	include/utility.h include/DynamicByteArray.h \
+	include/DynamicIntArray.h include/TightDataPointStorageI.h \
 	include/TightDataPointStorageD.h \
 	include/TightDataPointStorageF.h include/pastriD.h \
 	include/pastriF.h include/pastriGeneral.h include/pastri.h \
@@ -495,7 +496,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
 @FORTRAN_FALSE@		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
 @FORTRAN_FALSE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
-@FORTRAN_FALSE@		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h\
+@FORTRAN_FALSE@		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h\
 @FORTRAN_FALSE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
 @FORTRAN_FALSE@		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/sz_omp.h
 
@@ -505,7 +506,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@		include/sz_int8.h include/sz_int16.h include/sz_int32.h include/sz_int64.h include/szd_int8.h include/szd_int16.h include/szd_int32.h include/szd_int64.h\
 @FORTRAN_TRUE@		include/sz_uint8.h include/sz_uint16.h include/sz_uint32.h include/sz_uint64.h include/szd_uint8.h include/szd_uint16.h include/szd_uint32.h include/szd_uint64.h\
 @FORTRAN_TRUE@		include/sz_float_pwr.h include/sz_double_pwr.h include/szd_float.h include/szd_double.h include/szd_float_pwr.h include/szd_double_pwr.h\
-@FORTRAN_TRUE@		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h\
+@FORTRAN_TRUE@		include/sz_float_ts.h include/szd_float_ts.h include/sz_double_ts.h include/szd_double_ts.h include/utility.h\
 @FORTRAN_TRUE@		include/DynamicByteArray.h include/DynamicIntArray.h include/TightDataPointStorageI.h include/TightDataPointStorageD.h include/TightDataPointStorageF.h\
 @FORTRAN_TRUE@		include/pastriD.h include/pastriF.h include/pastriGeneral.h include/pastri.h include/sz_omp.h sz.mod rw.mod
 
@@ -522,7 +523,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_FALSE@libSZ_la_SOURCES = src/ByteToolkit.c \
 @FORTRAN_FALSE@	src/dataCompression.c src/DynamicIntArray.c \
 @FORTRAN_FALSE@	src/iniparser.c src/CompressElement.c \
-@FORTRAN_FALSE@	src/DynamicByteArray.c src/rw.c \
+@FORTRAN_FALSE@	src/DynamicByteArray.c src/rw.c src/utility.c \
 @FORTRAN_FALSE@	src/TightDataPointStorageI.c \
 @FORTRAN_FALSE@	src/TightDataPointStorageD.c \
 @FORTRAN_FALSE@	src/TightDataPointStorageF.c src/conf.c \
@@ -543,7 +544,7 @@ AUTOMAKE_OPTIONS = foreign
 @FORTRAN_TRUE@libSZ_la_SOURCES = src/ByteToolkit.c \
 @FORTRAN_TRUE@	src/dataCompression.c src/DynamicIntArray.c \
 @FORTRAN_TRUE@	src/iniparser.c src/szf.c src/CompressElement.c \
-@FORTRAN_TRUE@	src/DynamicByteArray.c src/rw.c \
+@FORTRAN_TRUE@	src/DynamicByteArray.c src/rw.c src/utility.c \
 @FORTRAN_TRUE@	src/TightDataPointStorageI.c \
 @FORTRAN_TRUE@	src/TightDataPointStorageD.c \
 @FORTRAN_TRUE@	src/TightDataPointStorageF.c src/conf.c \
@@ -651,6 +652,8 @@ src/libSZ_la-CompressElement.lo: src/$(am__dirstamp) \
 src/libSZ_la-DynamicByteArray.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-rw.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
+src/libSZ_la-utility.lo: src/$(am__dirstamp) \
+	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-TightDataPointStorageI.lo: src/$(am__dirstamp) \
 	src/$(DEPDIR)/$(am__dirstamp)
 src/libSZ_la-TightDataPointStorageD.lo: src/$(am__dirstamp) \
@@ -801,6 +804,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_uint64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szd_uint8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-szf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/libSZ_la-utility.Plo@am__quote@
 
 .F90.o:
 	$(AM_V_PPFC)$(PPFCCOMPILE) -c -o $@ $<
@@ -883,6 +887,13 @@ src/libSZ_la-rw.lo: src/rw.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/rw.c' object='src/libSZ_la-rw.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-rw.lo `test -f 'src/rw.c' || echo '$(srcdir)/'`src/rw.c
+
+src/libSZ_la-utility.lo: src/utility.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-utility.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-utility.Tpo -c -o src/libSZ_la-utility.lo `test -f 'src/utility.c' || echo '$(srcdir)/'`src/utility.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) src/$(DEPDIR)/libSZ_la-utility.Tpo src/$(DEPDIR)/libSZ_la-utility.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='src/utility.c' object='src/libSZ_la-utility.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -c -o src/libSZ_la-utility.lo `test -f 'src/utility.c' || echo '$(srcdir)/'`src/utility.c
 
 src/libSZ_la-TightDataPointStorageI.lo: src/TightDataPointStorageI.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libSZ_la_CFLAGS) $(CFLAGS) -MT src/libSZ_la-TightDataPointStorageI.lo -MD -MP -MF src/$(DEPDIR)/libSZ_la-TightDataPointStorageI.Tpo -c -o src/libSZ_la-TightDataPointStorageI.lo `test -f 'src/TightDataPointStorageI.c' || echo '$(srcdir)/'`src/TightDataPointStorageI.c

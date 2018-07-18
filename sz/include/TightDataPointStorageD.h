@@ -23,6 +23,8 @@ typedef struct TightDataPointStorageD
 	char reqLength;	
 	char radExpo; //used to compute reqLength based on segmented precisions in "pw_rel_compression"
 
+	double minLogValue;
+
 	int stateNum;
 	int allNodes;
 
@@ -31,8 +33,6 @@ typedef struct TightDataPointStorageD
 	
 	unsigned char* rtypeArray;
 	size_t rtypeArray_size;
-	
-	double minLogValue;	
 	
 	unsigned char* typeArray; //its size is dataSeriesLength/4 (or xxx/4+1) 
 	size_t typeArray_size;

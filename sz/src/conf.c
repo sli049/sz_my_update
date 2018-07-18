@@ -107,6 +107,8 @@ int SZ_ReadConf(const char* sz_cfgFile) {
 		
 		confparams_cpr->errorBoundMode = PSNR;
 		confparams_cpr->psnr = 90;
+		confparams_cpr->absErrBound = 1E-4;
+		confparams_cpr->relBoundRatio = 1E-4;
 		
 		confparams_cpr->pw_relBoundRatio = 1E-3;
 		confparams_cpr->segment_size = 36;
