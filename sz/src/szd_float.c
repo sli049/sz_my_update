@@ -1973,8 +1973,10 @@ void getSnapshotData_float_1D_ps(float** data, size_t dataSeriesLength, TightDat
 						decompressDataSeries_float_1D(data, dataSeriesLength, tdps);
 					if (phase == 1) //phase1 used time compression
 						{
-							decompressDataSeries_float_1D_ts(data, dataSeriesLength, multisteps, tdps);
+							if (TheCurVarNum >= 3)
+								decompressDataSeries_float_1D_ts(data, dataSeriesLength, multisteps, tdps);
 							//multisteps->hist_data += dataSeriesLength*sizeof(float);
+							else decompressDataSeries_float_1D_ts_vlct(data, dataSeriesLength, multisteps, tdps);
 						}					
 				}
 				else

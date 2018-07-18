@@ -161,6 +161,12 @@ extern "C" {
 //#define intvCapacity 131072
 //#define intvRadius 65536
 
+
+
+//int TheCurVarNum = 0;//sihuan make a global var counter
+
+
+
 #define SZ_COMPUTE_1D_NUMBER_OF_BLOCKS( COUNT, NUM_BLOCKS, BLOCK_SIZE ) \
     if (COUNT <= BLOCK_SIZE){                  \
         NUM_BLOCKS = 1;             \
@@ -294,6 +300,7 @@ typedef struct sort_ast_particle{
 } sort_ast_particle;
 
 extern int versionNumber[4];
+extern float delta_t_opt[5]; //sihuan added
 
 //-------------------key global variables--------------
 extern int dataEndianType; //*endian type of the data read from disk
@@ -308,6 +315,9 @@ extern int sz_with_regression;
 extern SZ_VarSet* sz_varset;
 extern sz_multisteps *multisteps; //compression based on multiple time steps (time-dimension based compression)
 extern sz_tsc_metadata *sz_tsc;
+extern SZ_Variable* v_global; //sihuan added
+extern int TheCurVarNum;
+
 
 //for pastri 
 #ifdef PASTRI
@@ -387,7 +397,11 @@ void write_reordered_tofile(SZ_VarSet* curVar, size_t dataLen);
 //sihuan added: write the reordered input to files for further decompression validation
 
 int SZ_compress_ts(unsigned char** newByteData, size_t *outSize);
+int SZ_compress_ts_vlct(unsigned char** newByteData, size_t *outSize);//sihuan added
+
 void SZ_decompress_ts(unsigned char *bytes, size_t byteLength);
+float calculate_delta_t(size_t size);//sihuan added
+void SZ_decompress_ts_vlct(unsigned char *bytes, size_t byteLength);//sihuan added
 
 void SZ_Finalize();
 

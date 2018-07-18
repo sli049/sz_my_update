@@ -118,7 +118,7 @@ int main(int argc, char * argv[])
 		//float *data_ = readFloatData(oriFilePath, &nbEle, &status);
 		//memcpy(data, data_, nbEle*sizeof(float));
 		cost_start();
-		SZ_compress_ts(&bytes, &outSize);
+		SZ_compress_ts_vlct(&bytes, &outSize);
 		cost_end();
 		printf("timecost=%f\n",totalCost); 
 		sprintf(outputFilePath, "%s/QCLOUDf%02d.bin.dat.sz2", outputDir, i);

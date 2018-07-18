@@ -102,7 +102,7 @@ int main(int argc, char * argv[])
         //sihuan debug
         printf("it goes through readByteData\n");
 		cost_start();
-		SZ_decompress_ts(bytes, byteLen);
+		SZ_decompress_ts_vlct(bytes, byteLen);
 		cost_end();
 		printf("timecost=%f\n",totalCost);
         int m;

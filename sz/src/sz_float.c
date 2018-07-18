@@ -745,8 +745,10 @@ size_t dataLength, double realPrecision, size_t *outSize, float valueRangeSize, 
 		//if(timestep % confparams_cpr->snapshotCmprStep != 0 && phase == 1)//sihuan changed
 		if(phase == 1)
 		{
-			tdps = SZ_compress_float_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_f);
-			//compressionType = 1; //time-series based compression 
+			if (TheCurVarNum >= 3) //this should be varied with the total number of variables
+				tdps = SZ_compress_float_1D_MDQ_ts(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_f);
+			//compressionType = 1; //time-series based compression
+			else tdps = SZ_compress_float_1D_MDQ_ts_vlct(oriData, dataLength, multisteps, realPrecision, valueRangeSize, medianValue_f);
 		}
 		if(phase == 2)
 		{	
