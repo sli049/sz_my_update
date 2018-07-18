@@ -22,6 +22,7 @@
 #include "rw.h"
 #include "Huffman.h"
 #include "conf.h"
+#include "utility.h"
 //#include "CurveFillingCompressStorage.h"
 
 int versionNumber[4] = {SZ_VER_MAJOR,SZ_VER_MINOR,SZ_VER_BUILD,SZ_VER_REVISION};
